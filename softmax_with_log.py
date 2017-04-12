@@ -34,7 +34,7 @@ def variable_summaries(var):
 
 def main(_):
     # load data
-    train_data, test_data = input_data.load_data_1char(FLAGS.data_dir)
+    meta, train_data, test_data = input_data.load_data(FLAGS.data_dir, flatten=True)
     print 'data loaded. train images: %s. test images: %s' % (train_data.images.shape[0], test_data.images.shape[0])
 
     # variable in the graph for input data
