@@ -6,7 +6,8 @@ import os
 import shutil
 import uuid
 from captcha.image import ImageCaptcha
-
+from PIL import Image
+import numpy as np
 import itertools
 
 FLAGS = None
@@ -18,34 +19,37 @@ def get_choices():
         (FLAGS.digit, map(str, range(10))),
         (FLAGS.lower, string.ascii_lowercase),
         (FLAGS.upper, string.ascii_uppercase),
-        ]
+    ]
     return tuple([i for _flag, choices in cate_map for i in choices if _flag])
 
 
-def _gen_captcha(img_dir, num_per_image, n, width, height, choices):
+def _gen_captcha(img_dir, num_per_image, n, width, height, font_size, choices):
     if os.path.exists(img_dir):
         shutil.rmtree(img_dir)
     if not os.path.exists(img_dir):
         os.makedirs(img_dir)
 
-    image = ImageCaptcha(width=width, height=height)
     print 'generating %s groups of captchas in %s' % (n, img_dir)
 
     for _ in range(n):
         for i in itertools.permutations(choices, num_per_image):
+            image = ImageCaptcha(width=width, height=height, font_sizes=[font_size])
             captcha = ''.join(i)
             fn = os.path.join(img_dir, '%s_%s.png' % (captcha, uuid.uuid4()))
+            # captcha_image = Image.open(image.generate(captcha))
+            # image_data = np.array(captcha_image)
+            # print 'generated image shape: (%d, %d, %d)' % image_data.shape
             image.write(captcha, fn)
 
 
 def gen_dataset(root_dir):
-
     n_train = FLAGS.n
     n_test = max(int(FLAGS.n * FLAGS.t), 1)
     num_per_image = FLAGS.npi
 
-    width = 40 + 20 * num_per_image
-    height = 100
+    width = 40 + 10 * num_per_image
+    height = 36
+    font_size = 32
 
     def _build_path(x):
         return os.path.join(root_dir, 'char-%s-groups-%s' % (num_per_image, n_train), x)
@@ -63,10 +67,10 @@ def gen_dataset(root_dir):
         'height': height,
     }
 
-    print '%s choices: %s' % (len(choices), ''.join(choices) or None)
+    print 'width: %d, height: %s, choices_len:%s, choices: %s' % (width, height, len(choices), ''.join(choices) or None)
 
-    _gen_captcha(_build_path('train'), num_per_image, n_train, width, height, choices=choices)
-    _gen_captcha(_build_path('test'), num_per_image, n_test, width, height, choices=choices)
+    _gen_captcha(_build_path('train'), num_per_image, n_train, width, height, font_size, choices=choices)
+    _gen_captcha(_build_path('test'), num_per_image, n_test, width, height, font_size, choices=choices)
 
     meta_filename = _build_path(META_FILENAME)
     with open(meta_filename, 'wb') as f:
@@ -75,7 +79,6 @@ def gen_dataset(root_dir):
 
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-n',

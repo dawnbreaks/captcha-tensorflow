@@ -3,6 +3,7 @@ import argparse
 import datetime
 import sys
 import tensorflow as tf
+import math
 
 import input_data
 
@@ -53,19 +54,21 @@ def main(_):
     print 'train images: %s. test images: %s' % (train_data.images.shape[0], test_data.images.shape[0])
 
     LABEL_SIZE = meta['label_size']
+    NUM_PER_IMAGE = meta['num_per_image']
     IMAGE_HEIGHT = meta['height']
     IMAGE_WIDTH = meta['width']
     IMAGE_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT
-    print 'label_size: %s, image_size: %s' % (LABEL_SIZE, IMAGE_SIZE)
+    OUTPUT_SIZE = NUM_PER_IMAGE * LABEL_SIZE
+    print 'IMAGE_SIZE: %s, OUTPUT_SIZE: %s' % (IMAGE_SIZE, OUTPUT_SIZE)
 
     # variable in the graph for input data
     with tf.name_scope('input'):
         x = tf.placeholder(tf.float32, [None, IMAGE_HEIGHT, IMAGE_WIDTH])
-        y_ = tf.placeholder(tf.float32, [None, LABEL_SIZE])
+        y_ = tf.placeholder(tf.float32, [None, OUTPUT_SIZE])
 
         # must be 4-D with shape `[batch_size, height, width, channels]`
         x_image = tf.reshape(x, [-1, IMAGE_HEIGHT, IMAGE_WIDTH, 1])
-        tf.summary.image('input', x_image, max_outputs=LABEL_SIZE)
+        tf.summary.image('input', x_image, max_outputs=OUTPUT_SIZE)
 
     # define the model
     with tf.name_scope('convolution-layer-1'):
@@ -82,11 +85,12 @@ def main(_):
         h_conv2 = tf.nn.tanh(conv2d(h_pool1, W_conv2) + b_conv2)
         h_pool2 = max_pool_2x2(h_conv2)
 
-    with tf.name_scope('densely-connected'):
-        W_fc1 = weight_variable([15 * 25 * 64, 1024])
+    with tf.name_scope('fully_connected_layer'):
+        fully_connected_layer_size = int(math.ceil(IMAGE_WIDTH / 4) * math.ceil(IMAGE_HEIGHT / 4) * 64)
+        W_fc1 = weight_variable([fully_connected_layer_size, 1024])
         b_fc1 = bias_variable([1024])
 
-        h_pool2_flat = tf.reshape(h_pool2, [-1, 15*25*64])
+        h_pool2_flat = tf.reshape(h_pool2, [-1, fully_connected_layer_size])
         h_fc1 = tf.nn.tanh(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
     with tf.name_scope('dropout'):
@@ -95,8 +99,8 @@ def main(_):
         h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
     with tf.name_scope('readout'):
-        W_fc2 = weight_variable([1024, LABEL_SIZE])
-        b_fc2 = bias_variable([LABEL_SIZE])
+        W_fc2 = weight_variable([1024, OUTPUT_SIZE])
+        b_fc2 = bias_variable([OUTPUT_SIZE])
 
         y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
@@ -154,12 +158,12 @@ def main(_):
         # final check after looping
         test_x, test_y = test_data.next_batch(2000)
         test_accuracy = accuracy.eval(feed_dict={x: test_x, y_: test_y, keep_prob: 1.0})
-        print 'testing accuracy = %.2f%%' % (test_accuracy * 100, )
+        print 'testing accuracy = %.2f%%' % (test_accuracy * 100,)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_dir', type=str, default='images/char-1-groups-1000/',
+    parser.add_argument('--data_dir', type=str, default='images/char-4-groups-1/',
                         help='Directory for storing input data')
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

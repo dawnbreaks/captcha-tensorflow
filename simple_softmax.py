@@ -20,15 +20,18 @@ def main(_):
 
     LABEL_SIZE = meta['label_size']
     IMAGE_SIZE = meta['width'] * meta['height']
-    print 'label_size: %s, image_size: %s' % (LABEL_SIZE, IMAGE_SIZE)
+    NUM_PER_IMAGE = meta['num_per_image']
+    OUTPUT_SIZE = NUM_PER_IMAGE * LABEL_SIZE
+
+    print 'OUTPUT_SIZE: %s, image_size: %s' % (OUTPUT_SIZE, IMAGE_SIZE)
 
     # variable in the graph for input data
     x = tf.placeholder(tf.float32, [None, IMAGE_SIZE])
-    y_ = tf.placeholder(tf.float32, [None, LABEL_SIZE])
+    y_ = tf.placeholder(tf.float32, [None, OUTPUT_SIZE])
 
     # define the model
-    W = tf.Variable(tf.zeros([IMAGE_SIZE, LABEL_SIZE]))
-    b = tf.Variable(tf.zeros([LABEL_SIZE]))
+    W = tf.Variable(tf.zeros([IMAGE_SIZE, OUTPUT_SIZE]))
+    b = tf.Variable(tf.zeros([OUTPUT_SIZE]))
     y = tf.matmul(x, W) + b
 
     # Define loss and optimizer

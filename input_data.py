@@ -24,6 +24,7 @@ def load_data(data_dir, flatten=False):
 
 class DataSet:
     """提供 next_batch 方法"""
+
     def __init__(self, images, labels):
         self._images = images
         self._labels = labels
@@ -64,24 +65,38 @@ def _read_images_and_labels(dir_name, flatten, ext='.png', **meta):
     for fn in os.listdir(dir_name):
         if fn.endswith(ext):
             fd = os.path.join(dir_name, fn)
-            images.append(_read_image(fd, flatten=flatten, **meta))
+            succ, image = _read_image(fd, flatten=flatten, **meta)
+            if succ == False:
+                continue;
+            images.append(image)
             labels.append(_read_lable(fd, **meta))
-    return np.array(images), np.array(labels)
+
+    labelArray = np.array(labels)
+    imageArray = np.array(images)
+    return imageArray, labelArray
 
 
 def _read_image(filename, flatten, width, height, **extra_meta):
     im = Image.open(filename).convert('L')
     data = np.asarray(im)
+    if data.shape != (height, width):
+        print 'bad image shape (%d, %d)' % data.shape
+        return False, data
     if flatten:
         return data.reshape(width * height)
-    return data
+    return True, data
 
 
-def _read_lable(filename, label_choices, **extra_meta):
+def _read_lable(filename, label_choices, num_per_image, **extra_meta):
     basename = os.path.basename(filename)
-    idx = label_choices.index(basename.split('_')[0])
-    data = np.zeros(len(label_choices))
-    data[idx] = 1
+    captch_text = basename.split('_')[0]
+    label_choices_len = len(label_choices)
+    data = np.zeros(label_choices_len * num_per_image)
+    i = 0
+    for c in captch_text:
+        idx = label_choices.index(c)
+        data[i * label_choices_len + idx] = 1
+        ++i
     return data
 
 
@@ -100,8 +115,8 @@ def display_info(meta, train_data, test_data):
 
 
 if __name__ == '__main__':
-    ret1 = load_data('images/char-1-groups-1000/')
+    ret1 = load_data('images/char-4-groups-1/')
     display_info(*ret1)
 
-    ret2 = load_data('images/char-1-groups-1000/', flatten=True)
-    display_info(*ret2)
+    # ret2 = load_data('images/char-1-groups-1000/', flatten=True)
+    # display_info(*ret2)
