@@ -31,9 +31,9 @@ def _gen_captcha(img_dir, num_per_image, n, width, height, font_size, choices):
 
     print 'generating %s groups of captchas in %s' % (n, img_dir)
 
+    image = ImageCaptcha(width=width, height=height, font_sizes=[font_size])
     for _ in range(n):
         for i in itertools.permutations(choices, num_per_image):
-            image = ImageCaptcha(width=width, height=height, font_sizes=[font_size])
             captcha = ''.join(i)
             fn = os.path.join(img_dir, '%s_%s.png' % (captcha, uuid.uuid4()))
             # captcha_image = Image.open(image.generate(captcha))
@@ -47,7 +47,7 @@ def gen_dataset(root_dir):
     n_test = max(int(FLAGS.n * FLAGS.t), 1)
     num_per_image = FLAGS.npi
 
-    width = 40 + 10 * num_per_image
+    width = 44 + 8 * num_per_image
     height = 36
     font_size = 32
 

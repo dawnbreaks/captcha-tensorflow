@@ -43,8 +43,8 @@ def conv2d(x, W):
 
 
 def max_pool_2x2(x):
-    return tf.nn.avg_pool(x, ksize=[1, 2, 2, 1],
-                          strides=[1, 2, 2, 1], padding='SAME')
+    return tf.nn.avg_pool(x, ksize=[1, 4, 4, 1],
+                          strides=[1, 4, 4, 1], padding='SAME')
 
 
 def main(_):
@@ -86,7 +86,7 @@ def main(_):
         h_pool2 = max_pool_2x2(h_conv2)
 
     with tf.name_scope('fully_connected_layer'):
-        fully_connected_layer_size = int(math.ceil(IMAGE_WIDTH / 4) * math.ceil(IMAGE_HEIGHT / 4) * 64)
+        fully_connected_layer_size = int(math.ceil(IMAGE_WIDTH / 16) * math.ceil(IMAGE_HEIGHT / 16) * 64)
         W_fc1 = weight_variable([fully_connected_layer_size, 1024])
         b_fc1 = bias_variable([1024])
 
@@ -163,7 +163,7 @@ def main(_):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_dir', type=str, default='images/char-4-groups-1/',
+    parser.add_argument('--data_dir', type=str, default='images/kaptcha-2-groups-100/',
                         help='Directory for storing input data')
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

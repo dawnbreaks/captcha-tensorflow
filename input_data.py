@@ -96,7 +96,7 @@ def _read_lable(filename, label_choices, num_per_image, **extra_meta):
     for c in captch_text:
         idx = label_choices.index(c)
         data[i * label_choices_len + idx] = 1
-        ++i
+        i +=1
     return data
 
 
@@ -115,7 +115,7 @@ def display_info(meta, train_data, test_data):
 
 
 if __name__ == '__main__':
-    ret1 = load_data('images/char-4-groups-1/')
+    ret1 = load_data('images/char-2-groups-200/')
     display_info(*ret1)
 
     # ret2 = load_data('images/char-1-groups-1000/', flatten=True)
