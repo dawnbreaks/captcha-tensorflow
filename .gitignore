@@ -46,3 +46,7 @@ pip-log.txt  # Installer logs
 
 
 !PLACEHOLDER
+
+*.data*
+*.index
+*.meta

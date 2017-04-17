@@ -14,24 +14,23 @@ ALPHABET = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'
 
 
 # 验证码一般都无视大小写；验证码长度4个字符
-# number+alphabet+ALPHABET
-def random_captcha_text(char_set=number, captcha_size=4):
+def random_captcha_text(char_set=number+alphabet+ALPHABET, captcha_text_len=4):
     captcha_text = []
-    for i in range(captcha_size):
+    for i in range(captcha_text_len):
         c = random.choice(char_set)
         captcha_text.append(c)
     return captcha_text
 
 
 # 生成字符对应的验证码
-def gen_captcha_text_and_image(width, height, font_size = 46):
+def gen_captcha_text_and_image(width, height, char_set, captcha_text_len, font_size = 46):
     image = ImageCaptcha(width=width, height= height, font_sizes=[font_size])
 
-    captcha_text = random_captcha_text()
+    captcha_text = random_captcha_text(char_set= char_set, captcha_text_len = captcha_text_len)
     captcha_text = ''.join(captcha_text)
 
     captcha = image.generate(captcha_text)
-    # image.write(captcha_text, captcha_text + '.jpg')  # 写到文件
+    image.write(captcha_text, captcha_text + '.png', format="png")
 
     captcha_image = Image.open(captcha)
     captcha_image = np.array(captcha_image)
@@ -39,12 +38,10 @@ def gen_captcha_text_and_image(width, height, font_size = 46):
 
 
 if __name__ == '__main__':
-    # 测试
-    text, image = gen_captcha_text_and_image(160, 60)
-
-    f = plt.figure()
-    ax = f.add_subplot(111)
-    ax.text(0.1, 0.9, text, ha='center', va='center', transform=ax.transAxes)
-    plt.imshow(image)
-
-    plt.show()
+    text, image = gen_captcha_text_and_image(80, 80, number, 1, font_size= 76)
+    # f = plt.figure()
+    # ax = f.add_subplot(111)
+    # ax.text(0.1, 0.9, text, ha='center', va='center', transform=ax.transAxes)
+    # plt.imshow(image)
+    #
+    # plt.show()
